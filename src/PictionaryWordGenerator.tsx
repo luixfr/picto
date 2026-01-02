@@ -294,7 +294,7 @@ export const PictionaryWordGenerator: React.FC = () => {
           {/* Header */}
           <div className="text-center mb-8">
             <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-800 mb-2">
-              PictuPictu
+              Picto
             </h1>
             <p className="text-gray-500 text-sm sm:text-base">Pictionary Word Generator</p>
           </div>
