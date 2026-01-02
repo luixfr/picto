@@ -5,7 +5,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 
 export default defineConfig({
-  base:"https://github.com/luixfr/picto",
+  base:"/picto/",
   plugins: [
     VitePWA({
       includeAssets:['favicon.ico'],
