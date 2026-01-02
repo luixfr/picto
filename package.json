@@ -1,8 +1,9 @@
 {
-  "name": "piturany",
+  "name": "pictupictu",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
+  "description": "Pictionary Word Generator",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
@@ -30,6 +31,7 @@
     "globals": "^16.5.0",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.46.4",
-    "vite": "^7.2.4"
+    "vite": "^7.2.4",
+    "vite-plugin-pwa": "^1.2.0"
   }
 }

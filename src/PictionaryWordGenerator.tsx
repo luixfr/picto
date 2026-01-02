@@ -240,7 +240,7 @@ export const PictionaryWordGenerator: React.FC = () => {
   </div>, { id: "time_out_toast" });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 p-4 flex items-center justify-center relative">
+    <div className=" bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 p-4 flex h-dvh items-center justify-center relative">
 
       {/* Time's Up Toast Notification */}
       <Toaster />
@@ -277,7 +277,7 @@ export const PictionaryWordGenerator: React.FC = () => {
         </div>
       )}
 
-      <div className="bg-white rounded-3xl shadow-2xl p-6 sm:p-10 max-w-3xl w-full">
+      <div className="bg-white rounded-3xl shadow-2xl p-6 sm:p-10 max-w-3xl w-full sm:min-h-auto min-h-full">
 
         <div className='flex justify-around'>
           {/* Reset Game Button - Top Right Corner */}
@@ -294,9 +294,9 @@ export const PictionaryWordGenerator: React.FC = () => {
           {/* Header */}
           <div className="text-center mb-8">
             <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-800 mb-2">
-              Pictionary
+              PictuPictu
             </h1>
-            <p className="text-gray-500 text-sm sm:text-base">Word Generator</p>
+            <p className="text-gray-500 text-sm sm:text-base">Pictionary Word Generator</p>
           </div>
 
 
