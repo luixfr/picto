@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Play, Square, RotateCcw, RefreshCw, Settings } from 'lucide-react';
 import WORD_CATEGORIES from "./data/questions.json"
+import toast, { Toaster } from 'react-hot-toast';
 
 const TIMER_DURATION = 60;
 const STORAGE_KEY = 'pictionary_used_words';
@@ -36,7 +37,7 @@ export const PictionaryWordGenerator: React.FC = () => {
   const [timerRunning, setTimerRunning] = useState<boolean>(false);
   const [wordRevealed, setWordRevealed] = useState<boolean>(false);
   const [showSettings, setShowSettings] = useState<boolean>(false);
-  const [showTimeUpToast, setShowTimeUpToast] = useState<boolean>(false);
+
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const toastTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -54,7 +55,7 @@ export const PictionaryWordGenerator: React.FC = () => {
             // Play sound and vibrate when time is up
             playTimeUpAlert();
             // Show toast notification
-            showTimeUpNotification();
+            notify()
             return 0;
           }
           return prev - 1;
@@ -91,51 +92,37 @@ export const PictionaryWordGenerator: React.FC = () => {
     // Play sound using Web Audio API
     try {
       const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      
+
       // Create a beep sound
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
-      
+
       oscillator.connect(gainNode);
       gainNode.connect(audioContext.destination);
-      
+
       oscillator.frequency.value = 800; // Frequency in Hz
       oscillator.type = 'sine';
-      
+
       // Beep pattern: 3 short beeps
       const now = audioContext.currentTime;
-      
+
       // First beep
       gainNode.gain.setValueAtTime(0.3, now);
       gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
       oscillator.start(now);
-      
+
       // Second beep
       gainNode.gain.setValueAtTime(0.3, now + 0.2);
       gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
-      
+
       // Third beep
       gainNode.gain.setValueAtTime(0.3, now + 0.4);
       gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.55);
-      
+
       oscillator.stop(now + 0.6);
     } catch (error) {
       console.log('Audio playback not supported', error);
     }
-  };
-
-  const showTimeUpNotification = () => {
-    setShowTimeUpToast(true);
-    
-    // Clear any existing timeout
-    if (toastTimeoutRef.current) {
-      clearTimeout(toastTimeoutRef.current);
-    }
-    
-    // Auto-dismiss after 3 seconds
-    toastTimeoutRef.current = setTimeout(() => {
-      setShowTimeUpToast(false);
-    }, 3000);
   };
 
   const getAvailableWords = (): AvailableWord[] => {
@@ -163,7 +150,7 @@ export const PictionaryWordGenerator: React.FC = () => {
 
     const selected = available[Math.floor(Math.random() * available.length)];
     const shouldBeAllPlay = selected.category == 'random' ? true : Math.random() < ALL_PLAY_PROBABILITY;
-    
+
     setCurrentCategory(selected.category);
     setCurrentWord(selected.word);
     setIsAllPlay(shouldBeAllPlay);
@@ -205,8 +192,6 @@ export const PictionaryWordGenerator: React.FC = () => {
     localStorage.removeItem(STORAGE_KEY);
   };
 
-  const handleRevealPress = () => setWordRevealed(true);
-  const handleRevealRelease = () => setWordRevealed(false);
 
   const handleWordBoxInteraction = (e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
@@ -246,39 +231,19 @@ export const PictionaryWordGenerator: React.FC = () => {
   const availableCount = getAvailableWords().length;
   const totalWords = Object.values(WORD_CATEGORIES as WordCategories).reduce((sum, cat) => sum + cat.words.length, 0);
 
+  const notify = () => toast.custom(<div className="bg-red-500 text-white px-8 py-4 rounded-2xl shadow-2xl flex items-center gap-3">
+    <span className="text-4xl">⏰</span>
+    <div>
+      <p className="text-2xl font-black">TIME'S UP!</p>
+      <p className="text-sm opacity-90">Click "Next Word" to continue</p>
+    </div>
+  </div>, { id: "time_out_toast" });
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 p-4 flex items-center justify-center relative">
 
-      {/* Reset Game Button - Top Right Corner */}
-      <button
-        onClick={resetGame}
-        className="fixed top-4 right-4 p-3 bg-white text-gray-700 rounded-full hover:bg-gray-100 transition-all duration-200 shadow-lg z-10"
-        title="Reset Game"
-      >
-        <RefreshCw size={24} />
-      </button>
-
-      {/* Settings Button - Top Left Corner */}
-      <button
-        onClick={() => setShowSettings(!showSettings)}
-        className="fixed top-4 left-4 p-3 bg-white text-gray-700 rounded-full hover:bg-gray-100 transition-all duration-200 shadow-lg z-10"
-        title="Settings"
-      >
-        <Settings size={24} />
-      </button>
-
       {/* Time's Up Toast Notification */}
-      {showTimeUpToast && (
-        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-30 animate-bounce">
-          <div className="bg-red-500 text-white px-8 py-4 rounded-2xl shadow-2xl flex items-center gap-3">
-            <span className="text-4xl">⏰</span>
-            <div>
-              <p className="text-2xl font-black">TIME'S UP!</p>
-              <p className="text-sm opacity-90">Click "Next Word" to continue</p>
-            </div>
-          </div>
-        </div>
-      )}
+      <Toaster />
 
       {/* Settings Modal */}
       {showSettings && (
@@ -294,8 +259,8 @@ export const PictionaryWordGenerator: React.FC = () => {
                     setShowSettings(false);
                   }}
                   className={`w-full py-3 px-4 rounded-lg font-semibold transition-all duration-200 ${timerDuration === duration
-                      ? 'bg-indigo-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
                 >
                   {duration < 60 ? `${duration} seconds` : `${Math.floor(duration / 60)}:${(duration % 60).toString().padStart(2, '0')} minutes`}
@@ -314,14 +279,38 @@ export const PictionaryWordGenerator: React.FC = () => {
 
       <div className="bg-white rounded-3xl shadow-2xl p-6 sm:p-10 max-w-3xl w-full">
 
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-800 mb-2">
-            Pictionary
-          </h1>
-          <p className="text-gray-500 text-sm sm:text-base">Word Generator</p>
-        </div>
+        <div className='flex justify-around'>
+          {/* Reset Game Button - Top Right Corner */}
+          <div>
+            <button
+              onClick={resetGame}
+              className="p-3 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-100 transition-all duration-200 shadow-lg z-10"
+              title="Reset Game"
+            >
+              <RefreshCw size={24} />
+            </button>
+          </div>
 
+          {/* Header */}
+          <div className="text-center mb-8">
+            <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-800 mb-2">
+              Pictionary
+            </h1>
+            <p className="text-gray-500 text-sm sm:text-base">Word Generator</p>
+          </div>
+
+
+          {/* Settings Button - Top Left Corner */}
+          <div>
+            <button
+              onClick={() => setShowSettings(!showSettings)}
+              className="p-3 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-100 transition-all duration-200 shadow-lg z-10"
+              title="Settings"
+            >
+              <Settings size={24} />
+            </button>
+          </div>
+        </div>
         {/* Word Display Area */}
         <div
           className="rounded-2xl p-8 sm:p-12 mb-6 min-h-48 flex items-center justify-center shadow-lg relative transition-all duration-300 cursor-pointer select-none"
@@ -345,7 +334,7 @@ export const PictionaryWordGenerator: React.FC = () => {
               {formatCategoryName()}
             </div>
           )}
-          
+
           {isAllPlay && currentCategory && (
             <div
               className="absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide shadow-md animate-pulse"
@@ -357,7 +346,7 @@ export const PictionaryWordGenerator: React.FC = () => {
               All Play
             </div>
           )}
-          
+
           <div className="text-center w-full pointer-events-none">
             {currentWord ? (
               <>
@@ -425,7 +414,7 @@ export const PictionaryWordGenerator: React.FC = () => {
             className="py-4 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-all duration-200 flex items-center justify-center gap-2 font-semibold disabled:bg-gray-300 disabled:cursor-not-allowed shadow-md"
           >
             <RefreshCw size={20} />
-            <span className="hidden sm:inline">Restart</span>
+            <span className="hidden sm:inline">Restart timer</span>
           </button>
         </div>
 
